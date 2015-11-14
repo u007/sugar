@@ -29,6 +29,8 @@ public class SugarRecord {
 
     public static final String SUGAR = "Sugar";
     private Long id = null;
+    
+    public List<String>cached_columns = null;
 
     private static SQLiteDatabase getSugarDataBase() {
         return getSugarContext().getSugarDb().getDB();
@@ -228,6 +230,31 @@ public class SugarRecord {
 
     public static long save(Object object) {
         return save(getSugarDataBase(), object);
+    }
+    
+    public boolean column_exists(String name) {
+      if (cached_columns == null)
+        column_names();
+      
+      return cached_columns.contains(name);
+    }
+
+    public int columns_count() {
+        return column_names().length;
+    }
+    
+    public String[] column_names() {
+      if(cached_columns == null) {
+        cached_columns = new ArrayList<String>();
+        List<Field> columns = ReflectionUtil.getTableFields(this.getClass());
+        Field idField = null;
+        for (Field column : columns) {
+            cached_columns.add(column.getName());
+        }
+      }
+      
+      String[] res = new String[cached_columns.size()];
+      return cached_columns.toArray(res);
     }
 
     static long save(SQLiteDatabase db, Object object) {
